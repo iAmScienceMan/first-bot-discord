@@ -257,9 +257,6 @@ async def lockdown(ctx):
 bot.start_time = datetime.datetime.utcnow()
 bot.run("YOUR TOKEN HERE")
 
-
-#test
-
 # for future me:
 #DISCONTINUED# if ctx.message.author.guild_permissions.administrator:
 
