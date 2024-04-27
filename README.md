@@ -1,8 +1,12 @@
 # First Discord Bot
+Welcome to the repository, where I store and maintain my first discord bot\!
 
-Welcome to the repository, where I store and maintain my first discord bot!
-
-**Now supports slash (app) commands/**
+## Supported features
+- [x] **Now supports slash (app) commands\!**
+- [x] **DOTENV** to store secrets, and most importantly, discord bot token.
+- [ ] Custom embeds.
+- [ ] Admin roles.
+- [ ] React to get a role.
 
 ## Available Commands
 
@@ -27,10 +31,10 @@ Welcome to the repository, where I store and maintain my first discord bot!
 - `/unmute`: Unmutes a member from the server.
 - `/kick`: Kicks a member from the server.
 - `/ban`: Bans a member from the server.
-- `/lockdown`: Locks down the channel.
+- `/lockdown`: Locks down the channel with an optional to send message.
 - `/unlockdown`: Unlock the channel.
 
 ## Other Information
-Feel free to explore and use these commands!
+Feel free to explore and use these commands\!
 
 *Powered by iamscienceman*
