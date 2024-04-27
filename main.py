@@ -5,6 +5,7 @@ import datetime
 import asyncio
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+#client = discord.Client()
 
 ball_answers = [
     "Yes",
@@ -18,6 +19,7 @@ ball_answers = [
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
+    await bot.tree.sync()
 
 @bot.event
 async def on_message(message):
@@ -36,8 +38,12 @@ async def has_permissions(ctx):
         await ctx.send("You don't have permission to use this command.")
         return False
 
+@bot.hybrid_command()
+async def ping(ctx: commands.Context):
+    await ctx.send("Pong!")
+
 bot.remove_command('help')
-@bot.command(name='help', help='Displays all available commands with their descriptions.')
+@bot.hybrid_command(name='help', description='Displays all available commands with their descriptions.')
 async def help(ctx):
     embed = discord.Embed(
         title='Available Commands',
@@ -47,43 +53,46 @@ async def help(ctx):
 
     for command in bot.commands:
         if not command.hidden:
-            embed.add_field(name=f'{bot.command_prefix}{command.name}', value=command.help or 'No description provided.', inline=False)
+            embed.add_field(name=f'/{command.name}', value=command.description or 'No description provided.', inline=False)
             embed.set_footer(text='powered by iamscienceman')
 
     await ctx.send(embed=embed)
 
-@bot.command(name='ping',help="If you're online, it'll say Pong! If you're offline, it will not respond.")
-async def ping(ctx):
-    await ctx.send("Pong!")
+@bot.hybrid_command(name='echo',description="If bot's online, it'll answer with what you've said.")
+async def echo(ctx,msg):
+    await ctx.send(msg)
 
-@bot.command(name='poll',help="Creates a poll that user can vote on.")  
-async def poll(ctx, *, args=None):
+@bot.hybrid_command(name='poll',description="Creates a poll that user can vote on.")  
+async def poll(ctx, question, option1, option2, option3: str = "", option4: str = "", option5: str = "", option6: str = "", option7: str = "", option8: str = "", option9: str = "", option10: str = ""):
     # Check if the user provided any arguments
-    if args is None:
-        await ctx.send("You need to provide a question and at least 2 options for the poll. Use the format: !poll <question> | <option1> | <option2> | ...")
+    if option1 and option2 is None:
+        await ctx.send("You need to provide a question and at least 2 options for the poll.",delete_after=5)
         return
     
-    # Split the user input into question and options
-    parts = args.split('|')
+    options = [
+        option1,
+        option2,
+        option3,
+        option4,
+        option5,
+        option6,
+        option7,
+        option8,
+        option9,
+        option10
+    ]
     
-    # Check if the user provided both question and options
-    if len(parts) < 2:
-        await ctx.send("You need to provide a question and at least 2 options for the poll. Use the format: !poll <question> | <option1> | <option2> | ...")
-        return
-    
-    question = parts[0].strip()
-    options = [opt.strip() for opt in parts[1:]]
-    
+    options = [sublist for sublist in options if any(item.strip() for item in sublist)]
     if len(options) <= 1:
-        await ctx.send("You need to provide a question and at least 2 options for the poll. Use the format: !poll <question> | <option1> | <option2> | ...")
+        await ctx.send("You need to provide a question and at least 2 options for the poll.",delete_after=5)
         return
 
     if len(options) > 10:
-        await ctx.send("You can't have more than 10 options for the poll.")
+        await ctx.send("You can't have more than 10 options for the poll.",delete_after=5)
         return
 
     # Format the poll message
-    poll_message = f"**{question}**\n\n"
+    poll_message = f"# {question}\n\n"
 
     # Add options to the message
     for i, option in enumerate(options, start=1):
@@ -102,7 +111,7 @@ async def poll(ctx, *, args=None):
     if len(options) == 10:
         await poll.add_reaction("\U0001f51f")  # Keycap 10
 
-@bot.command(name='userinfo',help="Displays user info.")
+@bot.hybrid_command(name='userinfo',description="Displays user info.")
 async def userinfo(ctx, member: discord.Member = None):
     if member is None:
         member = ctx.author
@@ -131,7 +140,7 @@ async def userinfo(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
-@bot.command(name='serverinfo', help='Displays information about the server.')
+@bot.hybrid_command(name='serverinfo', description='Displays information about the server.')
 async def serverinfo(ctx):
     server = ctx.guild
     embed = discord.Embed(title="Server Information", color=discord.Color.blue())
@@ -149,7 +158,7 @@ async def serverinfo(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.command(name='avatar', help="Displays the avatar of user.")
+@bot.hybrid_command(name='avatar', description="Displays the avatar of user.")
 async def avatar(ctx, member: discord.Member = None):
     if member is None:
         member = ctx.author
@@ -167,15 +176,12 @@ async def avatar(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
-@bot.command(name='8ball',help="Gives you a random answer.")
-async def random_answer(ctx, *args):
-    if not args:
-        await ctx.send("Please provide a question.")
-        return
+@bot.hybrid_command(name='8ball', description='Gives you a random answer.')
+async def random_answer(ctx, question):
     response = random.choice(ball_answers)
     await ctx.send(response)
 
-@bot.command(name='roll',help="Roll a dice with a specified number of sides.")
+@bot.hybrid_command(name='roll',description="Roll a dice with a specified number of sides.")
 async def roll(ctx, sides: int):
         if sides <= 1:
             await ctx.send("Number of sides must be greater than 1.")
@@ -187,7 +193,7 @@ async def roll(ctx, sides: int):
         result = random.randint(1, sides)
         await ctx.send(f"Rolled a {sides}-sided dice and got: {result}")
 
-@bot.command(name='flip',help='Flips a coin.')
+@bot.hybrid_command(name='flip',description='Flips a coin.')
 async def flip(ctx):
     sides = [
         "Heads",
@@ -196,7 +202,7 @@ async def flip(ctx):
     response = random.choice(sides)
     await ctx.send(response)
 
-@bot.command(name='uptime',help="Displays the time bot has been online for.")
+@bot.hybrid_command(name='uptime',description="Displays the time bot has been online for.")
 async def uptime(ctx):
     delta = datetime.datetime.utcnow() - bot.start_time
     hours, remainder = divmod(int(delta.total_seconds()), 3600)
@@ -205,19 +211,19 @@ async def uptime(ctx):
     await ctx.send(f"Uptime: {days}d {hours}:{minutes}:{seconds}")
 
 ########## ADMIN COMMANDS SECTION ##########
-@bot.command(name='kick',help="Kicks a member from server.")
+@bot.hybrid_command(name='kick',description="Kicks a member from server.")
 @commands.has_permissions(kick_members=True)
 async def kick(ctx, member: discord.Member, *, reason=None):
     await member.kick(reason=reason)
     await ctx.send(f'{member.mention} has been kicked.')
 
-@bot.command(name='ban',help="Bans a member from server.")
+@bot.hybrid_command(name='ban',description="Bans a member from server.")
 @commands.has_permissions(ban_members=True)
 async def ban(ctx, member: discord.Member, *, reason=None):
     await member.ban(reason=reason)
     await ctx.send(f'{member.mention} has been banned.')
 
-@bot.command(name='mute',help="Mutes a member from server.")
+@bot.hybrid_command(name='mute',description="Mutes a member from server.")
 @commands.has_permissions(manage_roles=True)
 async def tempmute(ctx, member: discord.Member, duration: int, *, reason="No reason"):
     guild = ctx.guild
@@ -232,37 +238,38 @@ async def tempmute(ctx, member: discord.Member, duration: int, *, reason="No rea
     await asyncio.sleep(duration)
     await member.remove_roles(muted_role)
 
-@bot.command(name='unmute',help='Unmutes a member from server.')
+@bot.hybrid_command(name='unmute',description='Unmutes a member from server.')
 @commands.has_permissions(manage_roles=True)
 async def unmute(ctx, member: discord.Member):
     muted_role = discord.utils.get(ctx.guild.roles, name="Muted")
     await member.remove_roles(muted_role)
     await ctx.send(f'{member.mention} has been unmuted.')
 
-@bot.command(name='clear',help="Bulk delte messages.")
+@bot.hybrid_command(name='clear',description="Bulk delte messages.")
 @commands.has_permissions(manage_messages=True)
 async def clear(ctx, amount: int):
     await ctx.channel.purge(limit=1000)
     await ctx.send(f'{amount} messages cleared.', delete_after=5)
 
-@bot.command(name='lockdown',help="Locks down the channel.")
+@bot.hybrid_command(name='lockdown',description="Locks down the channel.")
 @commands.has_permissions(manage_channels=True)
-async def lockdown(ctx):
+async def lockdown(ctx, message):
     overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
     overwrite.send_messages = False
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-    await ctx.send('Channel locked down.')
+    await ctx.send(f'### Channel locked down!\n# {message}')
+
+@bot.hybrid_command(name='unlockdown',description="Unlocks the channel.")
+@commands.has_permissions(manage_channels=True)
+async def unlockdown(ctx):
+    overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
+    overwrite.send_messages = True
+    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+    await ctx.send('Channel unlocked.')
 
 # RUN THE BOT
 bot.start_time = datetime.datetime.utcnow()
-bot.run("YOUR TOKEN HERE")
+bot.run("YOUR_TOKEN")
 
 # for future me:
-#DISCONTINUED# if ctx.message.author.guild_permissions.administrator:
-
-# to-do:
-# implement all embeds & slash commands 
-
-# fix:
-# polls bad args
-# kys inside a word
+# moved to github projects
