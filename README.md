@@ -1,3 +1,7 @@
+# NO LONGER MAINTAINED!
+### NEW REPOSITORY:
+https://github.com/iAmScienceMan/bot-v2
+
 # First Discord Bot
 Welcome to the repository, where I store and maintain my first discord bot\!
 
